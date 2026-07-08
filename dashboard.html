@@ -237,7 +237,7 @@ const today = new Date(SNAPSHOT_DATE+"T00:00:00+08:00");
 const esc = s => (s==null?"":String(s)).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const prioCls = p => p==="高"?"hi":p==="中"?"mid":"lo";
 function daysLate(end){ const d=new Date(end+"T00:00:00+08:00"); return Math.round((today-d)/86400000); }
-function isOverdue(t){ return t.end && !t.actual_end && daysLate(t.end)>0; }
+function isOverdue(t){ return t.status!=="已完成" && t.end && !t.actual_end && daysLate(t.end)>0; }
 function whoCell(owner){
   if(!owner) return '<span style="color:var(--ink3)">未指派</span>';
   return esc(owner);
