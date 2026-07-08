@@ -1,2 +1,2 @@
-# bpm-dashboard
-BPM Team Notion Dashboard
+streamlit
+notion-client
