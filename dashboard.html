@@ -192,7 +192,7 @@
       <div id="decision"></div>
     </div>
     <div class="card" style="grid-column:span 2">
-      <div class="card-h"><h3>⚠️ 進度異常</h3><span class="hint">逾期天數 > 0</span></div>
+      <div class="card-h"><h3>⚠️ 進度異常</h3><span class="hint">狀態＝進行中 且 逾期天數 > 0</span></div>
       <div id="overdue"></div>
     </div>
   </div>
@@ -208,7 +208,7 @@
   <div class="kanban" id="kanban"></div>
  
   <div class="foot">
-    指標依定義即時計算：完成率＝已完成÷總任務；專案進度＝該專案已完成任務數÷總任務數；逾期天數直接讀取 Notion 公式欄位（＞0 顯示紅字）。<br>
+    指標依定義即時計算：完成率＝已完成÷總任務；專案進度＝該專案已完成任務數÷總任務數；逾期天數直接讀取 Notion 公式欄位；「進度異常」與「落後任務件數」僅計入狀態為進行中且逾期天數＞0的任務（已完成、未開始不計入，但各明細表的逾期天數欄仍會如實顯示 Notion 原始數值）。<br>
     資料來源 Notion · BPM Team teamspace（動態納入新專案）。本頁為快照，更新請對 Claude 說「更新 dashboard」。
   </div>
 </div>
@@ -248,7 +248,9 @@ const total = TASKS.length;
 const cnt = s => TASKS.filter(t=>t.status===s).length;
 const nInProg = cnt("進行中"), nDone = cnt("已完成"), nTodo = cnt("未開始");
 const decisionList = TASKS.filter(t=>t.decide==="待決議");
-const overdueList = TASKS.filter(t=>t.overdue_days>0).sort((a,b)=>b.overdue_days-a.overdue_days);
+// 「進度異常」／「落後任務件數」只計入狀態為「進行中」且逾期天數>0的任務
+// （已完成的任務即使逾期天數欄位仍有值，也不計入這裡；未開始的任務同樣不計入）
+const overdueList = TASKS.filter(t=>t.status==="進行中" && t.overdue_days>0).sort((a,b)=>b.overdue_days-a.overdue_days);
  
 const projOrder=[]; const projMap={};
 TASKS.forEach(t=>{ if(!projMap[t.proj]){projMap[t.proj]=[];projOrder.push(t.proj);} projMap[t.proj].push(t); });
