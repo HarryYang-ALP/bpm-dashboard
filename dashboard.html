@@ -243,6 +243,12 @@ function whoCell(owner){
   return esc(owner);
 }
 function stPill(s){ return '<span class="st"><span class="sdot" style="background:'+STC[s]+'"></span>'+s+'</span>'; }
+// 已完成的任務，若「實際完成日」晚於「結束日期」（實際完成日 - 結束日期 > 0），
+// 則畫面上的「結束日」改顯示實際完成日；其餘情況仍顯示原本的結束日期。
+function displayEnd(t){
+  if(t.status==="已完成" && t.actual_end && t.end && t.actual_end > t.end) return t.actual_end;
+  return t.end;
+}
  
 const total = TASKS.length;
 const cnt = s => TASKS.filter(t=>t.status===s).length;
@@ -263,7 +269,7 @@ const projects = projOrder.map(name=>{
  
 document.getElementById("snap").textContent = SNAPSHOT_DATETIME;
 document.getElementById("projcount").textContent = projects.length + " 個";
-document.getElementById("donutcenter").textContent = total;
+document.getElementById("donutcenter").textContent = total + " 件";
  
 const kpiDefs = [
   {n:total, lbl:"總任務件數", sub:"", cls:"", ic:"i-navy",
@@ -286,15 +292,25 @@ document.getElementById("kpis").innerHTML = kpiDefs.map(k=>`
 (function(){
   const segs=[{k:"已完成",v:nDone},{k:"進行中",v:nInProg},{k:"未開始",v:nTodo}];
   const r=64, cx=80, cy=80, C=2*Math.PI*r; let off=0;
-  let svg='';
-  segs.forEach(s=>{ if(s.v<=0) return; const len=s.v/total*C;
+  let svg='', labels='';
+  segs.forEach(s=>{ if(s.v<=0) return; const frac=total?s.v/total:0; const len=frac*C;
     svg+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${STC[s.k]}" stroke-width="20"
             stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}"
             transform="rotate(-90 ${cx} ${cy})" stroke-linecap="butt"/>`;
+    // 在圓餅圖每個色塊的中點角度標示百分比
+    const midFrac = frac ? (off/C) + frac/2 : 0;
+    const angle = midFrac*2*Math.PI - Math.PI/2;
+    const tx = cx + r*Math.cos(angle);
+    const ty = cy + r*Math.sin(angle);
+    const pct = Math.round(frac*100);
+    const textFill = s.k==="未開始" ? "#615a7d" : "#fff";
+    labels+=`<text x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="700" fill="${textFill}">${pct}%</text>`;
     off+=len; });
-  document.getElementById("donut").innerHTML=svg;
-  document.getElementById("donutlegend").innerHTML=segs.map(s=>`
-    <div class="row"><span class="sw" style="background:${STC[s.k]}"></span>${s.k}<span class="v">${s.v}</span></div>`).join("");
+  document.getElementById("donut").innerHTML=svg+labels;
+  document.getElementById("donutlegend").innerHTML=segs.map(s=>{
+    const pct = total?Math.round(s.v/total*100):0;
+    return `<div class="row"><span class="sw" style="background:${STC[s.k]}"></span>${s.k}<span class="v">${s.v} 件</span> (${pct}%)</div>`;
+  }).join("");
 })();
  
 const maxN=Math.max(...projects.map(p=>p.n));
@@ -318,7 +334,7 @@ const maxN=Math.max(...projects.map(p=>p.n));
     const grad=segs.length?`linear-gradient(90deg,${segs.join(",")})`:'';
     const tip=`未開始 ${nTd} ／ 進行中 ${nIp} ／ 已完成 ${nDn}`;
     return `<div class="bar-row">
-      <div class="top"><span class="name">${esc(p.name)}</span><span class="val">${p.n} 筆</span></div>
+      <div class="top"><span class="name">${esc(p.name)}</span><span class="val">${p.n} 件</span></div>
       <div class="track bare">
         <div class="bar-tip-wrap" style="width:${barW}%;height:13px;display:inline-block;vertical-align:top">
           <span style="display:block;width:100%;height:100%;border-radius:999px;background:${grad};cursor:pointer"></span>
@@ -364,7 +380,7 @@ document.getElementById("projects").innerHTML = projects.map((p,i)=>`
       ${p.tasks.slice().sort(taskOrder).map(t=>`<tr>
         <td>${esc(t.task)}${t.decide==="待決議"?' <span class="tg hi">待決議</span>':t.decide==="已決議"?' <span class="tg lo">已決議</span>':''}</td>
         <td>${whoCell(t.owner)}</td><td>${stPill(t.status)}</td>
-        <td>${t.end?esc(t.end):'<span style="color:var(--ink3)">—</span>'}</td>
+        <td>${displayEnd(t)?esc(displayEnd(t)):'<span style="color:var(--ink3)">—</span>'}</td>
         <td>${overdueCell(t)}</td>
         <td><span class="tg ${prioCls(t.prio)}">${t.prio}</span></td></tr>`).join("")}
       </tbody></table>
@@ -407,7 +423,7 @@ document.getElementById("kanban").innerHTML = ["未開始","進行中","已完�
       <td><span class="tg proj">${esc(t.proj)}</span></td>
       <td>${esc(t.task)}${t.decide==="待決議"?' <span class="tg hi">待決議</span>':''}</td>
       <td>${stPill(t.status)}</td>
-      <td>${t.end?esc(t.end):'<span style="color:var(--ink3)">—</span>'}</td>
+      <td>${displayEnd(t)?esc(displayEnd(t)):'<span style="color:var(--ink3)">—</span>'}</td>
       <td>${overdueCell(t)}</td>
       <td><span class="tg ${prioCls(t.prio)}">${t.prio}</span></td>
     </tr>`).join("")}</tbody></table>`;
