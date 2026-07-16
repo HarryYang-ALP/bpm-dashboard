@@ -177,7 +177,7 @@
       <div class="card-h"><h3>狀態分佈</h3></div>
       <div class="donut-wrap">
         <div class="donut-area">
-          <div class="donut"><svg id="donut" viewBox="-20 -20 200 200"></svg>
+          <div class="donut"><svg id="donut" viewBox="-30 -30 200 200"></svg>
             <div class="center"><b id="donutcenter"></b><small>總任務</small></div>
           </div>
         </div>
@@ -298,13 +298,19 @@ document.getElementById("kpis").innerHTML = kpiDefs.map(k=>`
     svg+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${STC[s.k]}" stroke-width="20"
             stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}"
             transform="rotate(-90 ${cx} ${cy})" stroke-linecap="butt"/>`;
-    // 在圓餅圖每個色塊的中點角度、外側標示百分比（深灰色）
+    // 在圓餅圖每個色塊的中點角度、外側標示百分比（深灰色），並加一條細線連接環與文字
     const midFrac = frac ? (off/C) + frac/2 : 0;
     const angle = midFrac*2*Math.PI - Math.PI/2;
     const rOuter = r + 30; // 環外側，留出間距避免與色塊重疊
-    const tx = cx + rOuter*Math.cos(angle);
-    const ty = cy + rOuter*Math.sin(angle);
+    const rLineStart = r + 10; // 線的起點：環的外緣（stroke-width 20，半寬 10）
+    const rLineEnd = rOuter - 7; // 線的終點：文字前一點，避免蓋住文字
+    const cosA = Math.cos(angle), sinA = Math.sin(angle);
+    const lx1 = cx + rLineStart*cosA, ly1 = cy + rLineStart*sinA;
+    const lx2 = cx + rLineEnd*cosA, ly2 = cy + rLineEnd*sinA;
+    const tx = cx + rOuter*cosA;
+    const ty = cy + rOuter*sinA;
     const pct = Math.round(frac*100);
+    labels+=`<line x1="${lx1}" y1="${ly1}" x2="${lx2}" y2="${ly2}" stroke="#b9bccd" stroke-width="1.2"/>`;
     labels+=`<text x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="700" fill="#555a64">${pct}%</text>`;
     off+=len; });
   document.getElementById("donut").innerHTML=svg+labels;
