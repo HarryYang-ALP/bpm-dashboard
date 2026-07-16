@@ -301,7 +301,7 @@ document.getElementById("kpis").innerHTML = kpiDefs.map(k=>`
     // 在圓餅圖每個色塊的中點角度、外側標示百分比（深灰色）
     const midFrac = frac ? (off/C) + frac/2 : 0;
     const angle = midFrac*2*Math.PI - Math.PI/2;
-    const rOuter = r + 20; // 環外側，留出間距避免與色塊重疊
+    const rOuter = r + 30; // 環外側，留出間距避免與色塊重疊
     const tx = cx + rOuter*Math.cos(angle);
     const ty = cy + rOuter*Math.sin(angle);
     const pct = Math.round(frac*100);
