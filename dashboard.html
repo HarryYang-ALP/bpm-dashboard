@@ -76,6 +76,7 @@
   .donut svg{width:100%;height:100%;display:block}
   .donut .center{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
   .donut .center b{font-size:clamp(24px,4.5vw,42px);font-weight:800;letter-spacing:-.5px}
+  .donut .center b .unit{font-size:clamp(12px,1.2vw,14px);font-weight:600;letter-spacing:0;margin-left:2px}
   .donut .center small{display:block;font-size:clamp(12px,1.2vw,14px);color:var(--ink3);margin-top:2px}
   .legend{display:flex;flex-direction:column;gap:10px;flex:1;justify-content:center}
   .legend .row{display:flex;align-items:center;gap:6px;font-size:12px}
@@ -176,7 +177,7 @@
       <div class="card-h"><h3>狀態分佈</h3></div>
       <div class="donut-wrap">
         <div class="donut-area">
-          <div class="donut"><svg id="donut" viewBox="0 0 160 160"></svg>
+          <div class="donut"><svg id="donut" viewBox="-20 -20 200 200"></svg>
             <div class="center"><b id="donutcenter"></b><small>總任務</small></div>
           </div>
         </div>
@@ -269,7 +270,7 @@ const projects = projOrder.map(name=>{
  
 document.getElementById("snap").textContent = SNAPSHOT_DATETIME;
 document.getElementById("projcount").textContent = projects.length + " 個";
-document.getElementById("donutcenter").textContent = total + " 件";
+document.getElementById("donutcenter").innerHTML = total + '<span class="unit"> 件</span>';
  
 const kpiDefs = [
   {n:total, lbl:"總任務件數", sub:"", cls:"", ic:"i-navy",
@@ -297,14 +298,14 @@ document.getElementById("kpis").innerHTML = kpiDefs.map(k=>`
     svg+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${STC[s.k]}" stroke-width="20"
             stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}"
             transform="rotate(-90 ${cx} ${cy})" stroke-linecap="butt"/>`;
-    // 在圓餅圖每個色塊的中點角度標示百分比
+    // 在圓餅圖每個色塊的中點角度、外側標示百分比（深灰色）
     const midFrac = frac ? (off/C) + frac/2 : 0;
     const angle = midFrac*2*Math.PI - Math.PI/2;
-    const tx = cx + r*Math.cos(angle);
-    const ty = cy + r*Math.sin(angle);
+    const rOuter = r + 20; // 環外側，留出間距避免與色塊重疊
+    const tx = cx + rOuter*Math.cos(angle);
+    const ty = cy + rOuter*Math.sin(angle);
     const pct = Math.round(frac*100);
-    const textFill = s.k==="未開始" ? "#615a7d" : "#fff";
-    labels+=`<text x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="700" fill="${textFill}">${pct}%</text>`;
+    labels+=`<text x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="700" fill="#555a64">${pct}%</text>`;
     off+=len; });
   document.getElementById("donut").innerHTML=svg+labels;
   document.getElementById("donutlegend").innerHTML=segs.map(s=>{
