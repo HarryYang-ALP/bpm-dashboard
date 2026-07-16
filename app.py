@@ -125,6 +125,7 @@ def fetch_all_tasks():
                     "status": status or "未開始",
                     "start": txt("開始日期"),
                     "end": txt("結束日期"),
+                    "actual_end": txt("實際完成日"),  # 實際完成日，若資料庫沒有此欄位則自動回傳空字串
                     "overdue_days": txt("逾期天數"),  # Notion formula 欄位，直接讀取數值
                     "decide": txt("須優先決議") or "否",
                     "note": txt("決議事項說明"),
